@@ -7,7 +7,7 @@ initSqlJs({
     locateFile: file => `https://sql.js.org/dist/${file}` // Point to wasm file
 }).then(async SQL => {
     // Fetch the pre-hosted .db file
-    const response = await fetch('assets/data/players.db');
+    const response = await fetch('assets/data/nfl_players.db');
     const buffer = await response.arrayBuffer();
 
     // Load the database from the buffer
