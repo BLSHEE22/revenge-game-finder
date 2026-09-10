@@ -7,7 +7,7 @@ initSqlJs({
     locateFile: file => `https://sql.js.org/dist/${file}` // Point to wasm file
 }).then(async SQL => {
     // Fetch the pre-hosted .db file
-    const response = await fetch('assets/data/nfl_players.db');
+    const response = await fetch('assets/data/nfl_2026.db');
     const buffer = await response.arrayBuffer();
 
     // Load the database from the buffer
@@ -20,7 +20,7 @@ initSqlJs({
 
 // player data object
 class Player {
-    constructor(player_id, name, position, current_team, revenge_type, former_team, team_history) {
+    constructor(player_id, name, position, current_team, revenge_type, former_team, team_history, curr_headshot, grudge_headshot) {
         this.player_id = player_id;
         this.name = name;
         this.position = position;
@@ -28,6 +28,8 @@ class Player {
         this.revenge_type = revenge_type;
         this.former_team = former_team;
         this.team_history = team_history;
+        this.curr_headshot = curr_headshot;
+        this.grudge_headshot = grudge_headshot;
     }
 }
 
@@ -130,8 +132,8 @@ document.addEventListener('DOMContentLoaded', () => {
         * @returns {list[list[Player], string]} - List of players with revenge on opposingTeam.
         */
         function findPlayersWithRevenge(currTeam, opposingTeam) {
-            const query = `SELECT player_id, name, position, team, team_history, initial_team, 
-                            fantasy_pos_rk, headshot_url FROM players WHERE team == '${currTeam}' AND 
+            const query = `SELECT gsis_id, name, position, team, team_history, initial_team, 
+                            headshot_url FROM players WHERE team == '${currTeam}' AND 
                             instr(team_history, '${opposingTeam}') > 0;`;
             const results = db.exec(query);
             console.log(`Players on ${currTeam} that used to play for ${opposingTeam}:`);
@@ -180,13 +182,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log(`Team history: ${teamHistory}`);
                     const initialTeam = playerObj[5];
                     console.log(`Initial team: ${initialTeam}`);
+                    const headshots = JSON.parse(playerObj[6].replace(/'/g, '"'))
+                    const curr_headshot = headshots[team]
+                    console.log(`Current Headshot: ${curr_headshot}`)
+                    const grudge_headshot = headshots[opposingTeam]
+                    console.log(`Grudge Headshot: ${grudge_headshot}`)
 
                     // specify 'original' revenge type if player is facing his initial team
                     let revengeType = "former";
                     if (initialTeam == team) {
                         revengeType = "original";
                     }
-                    const player = new Player(playerId, name, position, team, revengeType, opposingTeam, teamHistory)
+                    const player = new Player(playerId, name, position, team, revengeType, opposingTeam, teamHistory, curr_headshot, grudge_headshot)
                     players.push(player);
                 }
             } else {
@@ -262,10 +269,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                     </div>
                                 </div>
                                 <div class="fade-wrapper">
-                                    <img src="https://www.pro-football-reference.com/req/20230307/images/headshots/${p.player_id}_2025.jpg"
+                                    <img src="${p.curr_headshot}"
                                         alt onerror="this.onerror=null;this.src='assets/images/football3.png'"
                                         class="normal">
-                                    <img src="https://www.pro-football-reference.com/req/20230307/images/headshots/${p.player_id}_${first_grudge_season}.jpg"
+                                    <img src="${p.grudge_headshot}"
                                         data-hover="https://www.pro-football-reference.com/req/20230307/images/headshots/${p.player_id}_${first_grudge_season}.jpg"
                                         data-normal="https://www.pro-football-reference.com/req/20230307/images/headshots/${p.player_id}_2025.jpg"
                                         alt onerror="this.onerror=null;this.src='none'" class="hover">
