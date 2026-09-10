@@ -227,9 +227,16 @@ document.addEventListener('DOMContentLoaded', () => {
             //console.log(positionGroup[pos]);
             const tableOfContents = document.querySelector(`#${positionGroup[pos].toLowerCase()}-names`)
             const bios = document.querySelector(`#${positionGroup[pos].toLowerCase()}-bios`);
-            const playersForPosition = players.filter(p => p.position === pos);
-            for (const p of playersForPosition) {
+            const playerList = players.filter(p => p.position === pos);
+            playerList.forEach((p, playerIndex) => {
                 console.log(p)
+                const previousPlayer = playerList[playerIndex - 1];
+                const nextPlayer = playerList[playerIndex + 1];
+                const playerNavigation = `
+                                    <nav class="player-navigation" aria-label="Player navigation">
+                                        ${previousPlayer ? `<a class="previous-player" href="#${previousPlayer.player_id}" aria-label="Previous player">&uarr;</a>` : ''}
+                                        ${nextPlayer ? `<a class="next-player" href="#${nextPlayer.player_id}" aria-label="Next player">&darr;</a>` : ''}
+                                    </nav>`;
                 // store seasons when player played for former team
                 let seasons = JSON.parse(p.team_history.replace(/'/g, '"'))[p.former_team];
                 if (seasons.length > 1) {
@@ -257,6 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     <div class="primary-button">
                                         <a href="#revenge-games">Back to Table</a>
                                     </div>
+                                    ${playerNavigation}
                         </div>
                     </div>
                     <div class="col-lg-4">
@@ -283,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
         </section>`);
-            }
+            });
         }
     })
 })
