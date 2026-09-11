@@ -20,3 +20,20 @@ const sectionOneObserver = new IntersectionObserver(function(
 sectionOneOptions);
 
 sectionOneObserver.observe(sectionOne);
+
+document.addEventListener("click", event => {
+  const link = event.target.closest(".back-to-table");
+  if (!link) return;
+
+  event.preventDefault();
+
+  const target = document.querySelector(link.getAttribute("href"));
+  if (!target) return;
+
+  window.scrollTo({
+    top: target.getBoundingClientRect().top + window.scrollY,
+    left: 0,
+    behavior: "instant"
+  });
+  history.pushState(null, "", link.getAttribute("href"));
+});

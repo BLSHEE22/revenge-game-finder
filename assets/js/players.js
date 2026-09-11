@@ -221,7 +221,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // inject html for the table of contents and bio
         const positionSet = new Set(players.map(player => player.position));
+        const positionToEnglish = {
+            "QB": "QUARTERBACKS",
+            "RB": "RUNNING BACKS",
+            "WR": "WIDE RECEIVERS",
+            "TE": "TIGHT ENDS",
+            "OL": "OFFENSIVE LINE",
+            "DL-LB": "DEFENSIVE LINE/LINEBACKERS",
+            "DB": "DEFENSIVE BACKS",
+            "UTIL": "UTILITY"
+        };
         console.log(positionSet);
+        const positionIndicator = document.createElement('div');
+        positionIndicator.className = 'position-indicator';
+        positionIndicator.setAttribute('aria-live', 'polite');
+        document.body.appendChild(positionIndicator);
+
         for (const pos of positionSet) {
             console.log(`Position: ${pos}`);
             //console.log(positionGroup[pos]);
@@ -251,7 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // add html to table of contents  
                 tableOfContents.insertAdjacentHTML('beforeend', `<li><a href="#${p.player_id}" class="player-link">${p.name}</a></li><br>`);
                 // add html to bio
-                bios.insertAdjacentHTML('beforeend', `<section class="whats-trending" id="${p.player_id}">
+                bios.insertAdjacentHTML('beforeend', `<section class="whats-trending" id="${p.player_id}" data-position-group="${positionGroup[p.position]}">
             <br><br>&nbsp;
             <div class="container expanded">
                 <div class="row">
@@ -262,7 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="left-content">
                             <p>${p.name} (${p.position}, ${p.current_team}) goes up against his ${p.revenge_type} team the <b>${teams[p.former_team]["name"]}</b> this week.</p>
                                     <div class="primary-button">
-                                        <a href="#revenge-games">Back to Table</a>
+                                        <a href="#revenge-games" class="back-to-table">Back to Table</a>
                                     </div>
                                     ${playerNavigation}
                         </div>
@@ -293,5 +308,25 @@ document.addEventListener('DOMContentLoaded', () => {
         </section>`);
             });
         }
+
+        const playerSections = [...document.querySelectorAll('[data-position-group]')];
+        const updatePositionIndicator = () => {
+            const activeSection = playerSections.reduce((active, section) => {
+                if (section.getBoundingClientRect().top <= 150) return section;
+                return active;
+            }, null);
+
+            if (!activeSection || activeSection.getBoundingClientRect().bottom <= 150) {
+                positionIndicator.classList.remove('is-visible');
+                return;
+            }
+
+            const positionGroupName = activeSection.dataset.positionGroup;
+            positionIndicator.textContent = positionToEnglish[positionGroupName] || positionGroupName;
+            positionIndicator.classList.add('is-visible');
+        };
+
+        window.addEventListener('scroll', updatePositionIndicator, { passive: true });
+        updatePositionIndicator();
     })
 })

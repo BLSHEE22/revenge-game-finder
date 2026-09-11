@@ -18,6 +18,39 @@ body {
   max-width: 1320px;
 }
 
+.position-indicator {
+  position: fixed;
+  top: 62px;
+  left: 50%;
+  z-index: 221;
+  padding: 6px 16px;
+  background-color: #2a2a2a;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(-8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.position-indicator.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+#qb-bios,
+#rb-bios,
+#wr-bios,
+#te-bios,
+#ol-bios,
+#dl-lb-bios,
+#db-bios,
+#util-bios {
+  scroll-margin-top: -35vh;
+}
+
 @media (min-width: 768px) {
   .expanded {
     width: 100%;
@@ -39,6 +72,10 @@ img {
 img.swords {
   width: 35px;
   height: 35px;
+}
+
+.swords-divider {
+  margin-bottom: 3rem;
 }
 
 a {
@@ -1699,7 +1736,7 @@ section.contact-us-page .right-info ul li span {
 }
 
 .position-section {
-  padding: 120px 75px;
+  padding: 125px 75px;
   background-color: #333;
   color: white;
 }
