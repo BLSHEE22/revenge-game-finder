@@ -370,6 +370,7 @@ button:focus:not(:focus-visible) {
 }
 
 .main-banner {
+  position: relative;
   /* background-color: #333;
   background-image: url(https://www.denverpost.com/wp-content/uploads/2024/12/TDP-L-BRNXvBROWNS_1725.jpg?w=1800&resize=800,756);
   background-repeat: no-repeat;
@@ -383,8 +384,7 @@ button:focus:not(:focus-visible) {
 .main-banner::before {
   content: "";
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  height: 87.2%;
+  inset: 0;
   background: rgba(0, 0, 0, 0.5); /* 0.5 = 50% darkness */
   z-index: 1;
 }
@@ -947,6 +947,7 @@ footer .sub-footer a.scroll-to-top:hover {
 }
 
 .page-banner {
+  position: relative;
   background-color: white;
   background-image: url(../images/testimonial-bg.png);
   background-repeat: no-repeat;
@@ -960,8 +961,7 @@ footer .sub-footer a.scroll-to-top:hover {
 .page-banner::before {
   content: "";
   position: absolute;
-  height: 59.2%;
-  top: 0; left: 0; right: 0; bottom: 0;
+  inset: 0;
   background: rgba(0, 0, 0, 0.5);
   z-index: 1;
 }
@@ -1004,6 +1004,13 @@ footer .sub-footer a.scroll-to-top:hover {
 
 .services {
   margin-top: -85px;
+}
+
+.no-players {
+  padding: 30px 0px;
+  text-align: center;
+  color: #7a7a7a;
+  font-size: 18px;
 }
 
 .services .service-item {
@@ -1704,6 +1711,7 @@ section.contact-us-page .right-info ul li span {
 
 .fade-wrapper img.hover {
   opacity: 0;
+  background-color: #ffffff;
 }
 
 .fade-wrapper:hover img.default {

@@ -309,6 +309,25 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        const positionGroups = ["QB", "RB", "WR", "TE", "OL", "DL-LB", "DB", "UTIL"];
+        for (const group of positionGroups) {
+            const tableOfContents = document.querySelector(`#${group.toLowerCase()}-names`);
+            const bios = document.querySelector(`#${group.toLowerCase()}-bios`);
+            const hasPlayers = bios.querySelector(`[data-position-group="${group}"]`);
+
+            if (!hasPlayers) {
+                const groupId = group.toLowerCase();
+                const positionLink = document.querySelector(`.pos-label-link[href="#${groupId}-bios"]`);
+                positionLink?.setAttribute('href', `#${groupId}-header`);
+                tableOfContents.insertAdjacentHTML('beforeend', `<li class="no-players"><a href="#${groupId}-header"></a></li>`);
+                bios.insertAdjacentHTML('beforeend', `<p class="no-players">No Players This Week</p>
+                    <div class="primary-button">
+                        <center><a href="#revenge-games" class="back-to-table">Back to Table</a></center>
+                        <br><br>
+                    </div>`);
+            }
+        }
+
         const playerSections = [...document.querySelectorAll('[data-position-group]')];
         const updatePositionIndicator = () => {
             const activeSection = playerSections.reduce((active, section) => {
