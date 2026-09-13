@@ -261,10 +261,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const tableOfContents = document.querySelector(`#${positionGroup[pos].toLowerCase()}-names`)
             const bios = document.querySelector(`#${positionGroup[pos].toLowerCase()}-bios`);
             const playerList = players.filter(p => p.position === pos);
-            playerList.forEach((p, playerIndex) => {
+            const positionGroupPlayers = [...positionSet]
+                .filter(groupPosition => positionGroup[groupPosition] === positionGroup[pos])
+                .flatMap(groupPosition => players.filter(p => p.position === groupPosition));
+            playerList.forEach(p => {
                 console.log(p)
-                const previousPlayer = playerList[playerIndex - 1];
-                const nextPlayer = playerList[playerIndex + 1];
+                const groupPlayerIndex = positionGroupPlayers.indexOf(p);
+                const previousPlayer = positionGroupPlayers[groupPlayerIndex - 1];
+                const nextPlayer = positionGroupPlayers[groupPlayerIndex + 1];
                 const playerNavigation = `
                                     <nav class="player-navigation" aria-label="Player navigation">
                                         ${previousPlayer ? `<a class="previous-player" href="#${previousPlayer.player_id}" aria-label="Previous player">&uarr;</a>` : ''}
