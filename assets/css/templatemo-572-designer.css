@@ -1750,6 +1750,31 @@ section.contact-us-page .right-info ul li span {
   color: white;
 }
 
+.position-transition {
+  margin: 0 7%;
+  padding: 24px 0;
+  border-top: 1px solid rgba(42, 42, 42, 0.18);
+  text-align: center;
+}
+
+.position-transition a {
+  display: inline-block;
+  width: 44px;
+  height: 44px;
+  border: none;
+  color: #828282;
+  font-size: 34px;
+  line-height: 44px;
+  text-align: center;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.position-transition a:hover,
+.position-transition a:focus-visible {
+  color: #2a2a2a;
+}
+
 .whats-trending {
   position: relative;
   padding: 100px 0;

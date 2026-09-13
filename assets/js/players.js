@@ -20,7 +20,7 @@ initSqlJs({
 
 // player data object
 class Player {
-    constructor(player_id, name, position, current_team, revenge_type, former_team, team_history, curr_headshot, grudge_headshot) {
+    constructor(player_id, name, position, current_team, revenge_type, former_team, team_history, curr_headshot, grudge_headshot, game_date, game_time, game_has_passed) {
         this.player_id = player_id;
         this.name = name;
         this.position = position;
@@ -30,14 +30,20 @@ class Player {
         this.team_history = team_history;
         this.curr_headshot = curr_headshot;
         this.grudge_headshot = grudge_headshot;
+        this.game_date = game_date;
+        this.game_time = game_time;
+        this.game_has_passed = game_has_passed;
     }
 }
 
 // matchup data object
 class Matchup {
-    constructor(away_team, home_team) {
+    constructor(away_team, home_team, game_date, game_time, game_has_passed) {
         this.away_team = away_team;
         this.home_team = home_team;
+        this.game_date = game_date;
+        this.game_time = game_time;
+        this.game_has_passed = game_has_passed;
     }
 }
 
@@ -103,13 +109,19 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("---");
         }
 
+        function hasGamePassed(gameDate, gameTime) {
+            const cleanDate = gameDate.replace(/(st|nd|rd|th)/, '');
+            const seasonYear = new Date(`${weekLengthInfo[weekNum].start}T00:00:00`).getFullYear();
+            const gameDateTime = new Date(`${cleanDate}, ${seasonYear} ${gameTime}`);
+            return gameDateTime < now;
+        }
+
         // Get current week's matchups from database
         let matchups = [];
         const weekSlate = db.exec(`SELECT matchups FROM schedule WHERE week == '${weekNum}';`);
         const jsonWeekSlate = JSON.parse(weekSlate[0].values[0]);
-        const matchupDatesInWeek = Object.values(jsonWeekSlate)
-        for (const date of matchupDatesInWeek) {
-            for (const matchupObj of date) {
+        for (const [gameDate, matchupDate] of Object.entries(jsonWeekSlate)) {
+            for (const matchupObj of matchupDate) {
                 let awayTeam = matchupObj["awayTeam"];
                 let homeTeam = matchupObj["homeTeam"];
                 if (["LAC", "NE", "TEN"].includes(awayTeam)) {
@@ -118,7 +130,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (["LAC", "NE", "TEN"].includes(homeTeam)) {
                     homeTeam = team_name_map[homeTeam];
                 }
-                const matchup = new Matchup(awayTeam, homeTeam);
+                const gameTime = matchupObj["time"];
+                const matchup = new Matchup(awayTeam, homeTeam, gameDate, gameTime, hasGamePassed(gameDate, gameTime));
                 console.log(matchup);
                 matchups.push(matchup);
             }
@@ -131,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
         * @param {string} opposingTeam - Abbreviation of the opposing team.
         * @returns {list[list[Player], string]} - List of players with revenge on opposingTeam.
         */
-        function findPlayersWithRevenge(currTeam, opposingTeam) {
+        function findPlayersWithRevenge(currTeam, opposingTeam, gameDate, gameTime, gameHasPassed) {
             const query = `SELECT gsis_id, name, position, team, team_history, initial_team, 
                             headshot_url FROM players WHERE team == '${currTeam}' AND 
                             instr(team_history, '${opposingTeam}') > 0;`;
@@ -148,13 +161,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }      
             console.log(playerList);
-            return [playerList, opposingTeam];
+            return [playerList, opposingTeam, gameDate, gameTime, gameHasPassed];
         }
 
         let playersWithRevenge = [];
         for (let mu of matchups) {
-            playersWithRevenge.push(findPlayersWithRevenge(mu.away_team, mu.home_team));
-            playersWithRevenge.push(findPlayersWithRevenge(mu.home_team, mu.away_team));
+            playersWithRevenge.push(findPlayersWithRevenge(mu.away_team, mu.home_team, mu.game_date, mu.game_time, mu.game_has_passed));
+            playersWithRevenge.push(findPlayersWithRevenge(mu.home_team, mu.away_team, mu.game_date, mu.game_time, mu.game_has_passed));
         }
         console.log("All vengeant players:");
         console.log(playersWithRevenge);
@@ -164,6 +177,9 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let revengeObj of playersWithRevenge) {
             const playerList = revengeObj[0];
             const opposingTeam = revengeObj[1];
+            const gameDate = revengeObj[2];
+            const gameTime = revengeObj[3];
+            const gameHasPassed = revengeObj[4];
 
             if (playerList.length > 0) {
                 console.log(`Players with revenge games against ${opposingTeam}:`);
@@ -193,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (initialTeam == team) {
                         revengeType = "original";
                     }
-                    const player = new Player(playerId, name, position, team, revengeType, opposingTeam, teamHistory, curr_headshot, grudge_headshot)
+                    const player = new Player(playerId, name, position, team, revengeType, opposingTeam, teamHistory, curr_headshot, grudge_headshot, gameDate, gameTime, gameHasPassed)
                     players.push(player);
                 }
             } else {
@@ -218,6 +234,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // players.push(player7)
         // const player8 = new Player("BobeJa00", "Jacob Bobenmoyer", "LS", "RAI", "original", "DEN", "{'RAI': ['2023', '2024', '2025'], 'DEN': ['2020', '2021', '2022']}");
         // players.push(player8)
+
+        players = players.filter(player => !player.game_has_passed);
 
         // inject html for the table of contents and bio
         const positionSet = new Set(players.map(player => player.position));
@@ -275,7 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <h2>${p.name}</h2>
                         </div>
                         <div class="left-content">
-                            <p>${p.name} (${p.position}, ${p.current_team}) goes up against his ${p.revenge_type} team the <b>${teams[p.former_team]["name"]}</b> this week.</p>
+                            <p>${p.name} (${p.position}, ${p.current_team}) ${p.game_has_passed ? 'went' : 'goes'} up against his ${p.revenge_type} team the <b>${teams[p.former_team]["name"]}</b> on ${p.game_date} at ${p.game_time} ET.</p>
                                     <div class="primary-button">
                                         <a href="#revenge-games" class="back-to-table">Back to Table</a>
                                     </div>
@@ -325,6 +343,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         <center><a href="#revenge-games" class="back-to-table">Back to Table</a></center>
                         <br><br>
                     </div>`);
+            }
+
+            const groupIndex = positionGroups.indexOf(group);
+            if (groupIndex < positionGroups.length - 1) {
+                const nextGroup = positionGroups[groupIndex + 1];
+                const nextGroupId = nextGroup.toLowerCase();
+                const nextBios = document.querySelector(`#${nextGroupId}-bios`);
+                const nextTarget = nextBios.querySelector(`[data-position-group="${nextGroup}"]`)
+                    ? `${nextGroupId}-bios`
+                    : `${nextGroupId}-header`;
+                bios.insertAdjacentHTML('beforeend', `<div class="position-transition"><a href="#${nextTarget}" aria-label="Next position group"><span class="visually-hidden">Next position group</span>&darr;</a></div>`);
             }
         }
 
