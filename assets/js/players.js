@@ -113,7 +113,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const cleanDate = gameDate.replace(/(st|nd|rd|th)/, '');
             const seasonYear = new Date(`${weekLengthInfo[weekNum].start}T00:00:00`).getFullYear();
             const gameDateTime = new Date(`${cleanDate}, ${seasonYear} ${gameTime}`);
-            return gameDateTime < now;
+            const gameEndDateTime = new Date(gameDateTime);
+
+            // Add 3.5 hours to the game start time to serve as game end time
+            gameEndDateTime.setHours(gameEndDateTime.getHours() + 3); 
+            gameEndDateTime.setMinutes(gameEndDateTime.getMinutes() + 30);
+
+            console.log(`Game Date/Time: ${String(gameDateTime)}`);
+            console.log(`Game End Date/Time: ${String(new Date(gameDateTime.getTime() + (3.5 * 60 * 60 * 1000)))}`);
+            console.log(`Current Date/Time: ${String(now)}`);
+            console.log(`Has game passed? ${gameEndDateTime < now}`);
+
+            return gameEndDateTime < now; // game has passed if it ended more than 3.5 hours ago
         }
 
         // Get current week's matchups from database
