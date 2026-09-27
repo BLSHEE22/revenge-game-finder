@@ -48,10 +48,10 @@ class Matchup {
 }
 
 // translate modern team id to database id
-const team_name_map = {'LAC': 'SDG', 'TEN': 'OTI', 'NE': 'NWE'};
+const team_name_map = {'TEN': 'OTI', 'NE': 'NWE'};
 
 // translate database id to modern team id
-const team_db_name_to_irl_name = {'SDG': 'LAC', 'OTI': 'TEN', 'NWE': 'NE'};
+const team_db_name_to_irl_name = {'OTI': 'TEN', 'NWE': 'NE'};
 
 // define position order for use in tables
 const positionGroup = {"QB": "QB", // fantasy
@@ -135,10 +135,10 @@ document.addEventListener('DOMContentLoaded', () => {
             for (const matchupObj of matchupDate) {
                 let awayTeam = matchupObj["awayTeam"];
                 let homeTeam = matchupObj["homeTeam"];
-                if (["LAC", "NE", "TEN"].includes(awayTeam)) {
+                if (["NE", "TEN"].includes(awayTeam)) {
                     awayTeam = team_name_map[awayTeam];
                 }
-                if (["LAC", "NE", "TEN"].includes(homeTeam)) {
+                if (["NE", "TEN"].includes(homeTeam)) {
                     homeTeam = team_name_map[homeTeam];
                 }
                 const gameTime = matchupObj["time"];
