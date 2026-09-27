@@ -266,6 +266,29 @@ document.addEventListener('DOMContentLoaded', () => {
         positionIndicator.setAttribute('aria-live', 'polite');
         document.body.appendChild(positionIndicator);
 
+        function formatSeasonRanges(seasons) {
+            const years = seasons.map(Number).filter(Number.isInteger).sort((a, b) => a - b);
+            const ranges = [];
+            let rangeStart = years[0];
+            let rangeEnd = years[0];
+
+            for (const year of years.slice(1)) {
+                if (year <= rangeEnd) continue;
+                if (year === rangeEnd + 1) {
+                    rangeEnd = year;
+                } else {
+                    ranges.push(rangeStart === rangeEnd ? `${rangeStart}` : `${rangeStart}-${rangeEnd}`);
+                    rangeStart = rangeEnd = year;
+                }
+            }
+
+            if (rangeStart !== undefined) {
+                ranges.push(rangeStart === rangeEnd ? `${rangeStart}` : `${rangeStart}-${rangeEnd}`);
+            }
+
+            return ranges.join(', ');
+        }
+
         for (const pos of positionSet) {
             console.log(`Position: ${pos}`);
             //console.log(positionGroup[pos]);
@@ -286,16 +309,14 @@ document.addEventListener('DOMContentLoaded', () => {
                                         ${nextPlayer ? `<a class="next-player" href="#${nextPlayer.player_id}" aria-label="Next player">&darr;</a>` : ''}
                                     </nav>`;
                 // store seasons when player played for former team
-                let seasons = JSON.parse(p.team_history.replace(/'/g, '"'))[p.former_team];
-                if (seasons.length > 1) {
-                    seasons = seasons.join(", ");
-                }
+                const seasons = JSON.parse(p.team_history.replace(/'/g, '"'))[p.former_team];
+                const formattedSeasons = formatSeasonRanges(seasons);
                 // if former team is SDG or OTI, translate to modern abbreviation LAC or TEN
                 if (['SDG', 'OTI'].includes(p.former_team)) {
                     p.former_team = team_db_name_to_irl_name[p.former_team];
                 }
                 // store player's first season with former team
-                const first_grudge_season = seasons.slice(0, 4);
+                const first_grudge_season = seasons[0];
                 // add html to table of contents  
                 tableOfContents.insertAdjacentHTML('beforeend', `<li><a href="#${p.player_id}" class="player-link">${p.name}</a></li><br>`);
                 // add html to bio
@@ -320,8 +341,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="thumb">
                                 <div class="hover-effect">
                                     <div class="inner-content">
-                                        <h4><a href="#">Seasons with ${p.former_team}</a></h4>
-                                        <span>${seasons}</span>
+                                        <h4><a href="#">${seasons.length === 1 ? 'Season' : 'Seasons'} with ${p.former_team}</a></h4>
+                                        <span>${formattedSeasons}</span>
                                     </div>
                                 </div>
                                 <div class="fade-wrapper">
